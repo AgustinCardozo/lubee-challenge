@@ -1,28 +1,19 @@
 <template>
   <div>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-      <div class="container-fluid">
-        <a class="navbar-brand" href="#" @click.prevent="goHome"><img src="./assets/logo_lubee.png" alt="Logo" style="height: 40px;"></a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <button class="nav-link btn btn-link text-white" @click="currentView = 'list'">Listado</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link btn btn-link text-white" @click="currentView = 'create'">Crear Publicación</button>
-            </li>
-             <li class="nav-item">
-              <button class="nav-link btn btn-link text-white" @click="editPublication(3)">Editar</button>
-            </li>
-          </ul>
+    <nav class="navbar navbar-dark bg-primary">
+      <div class="container-fluid justify-content-center">
+        <div class="d-flex">
+          <a class="navbar-brand me-2" href="#" @click.prevent="goHome">
+            <img src="./assets/logo_lubee.png" alt="Logo" style="height: 40px;">
+          </a>
         </div>
       </div>
     </nav>
 
-    <main class="container-fluid">
-      <PublicationList v-if="currentView === 'list'" />
-      <PublicationForm v-if="currentView === 'create'" />
-      <PublicationForm v-if="currentView === 'edit'" :id="editId" />
+      <main class="container-fluid">
+      <PublicationList ref="publicationListRef" v-if="currentView === 'list'" @edit="editPublication" @create="currentView = 'create'" />
+      <PublicationForm v-if="currentView === 'create'" @done="goHome" />
+      <PublicationForm v-if="currentView === 'edit'" :id="editId" @done="goHome" />
     </main>
 
   </div>
@@ -37,19 +28,26 @@ import PublicationForm from '@/components/PublicationForm.vue';
 const currentView = ref<'list' | 'create' | 'edit'>('list');
 const editId = ref<number | undefined>(undefined); // Almacena el ID de la publicación a editar
 
+type PublicationListInstance = { clearFilters?: () => void };
+const publicationListRef = ref<PublicationListInstance | null>(null);
+
 const editPublication = (id: number) => {
   editId.value = id;
   currentView.value = 'edit';
 };
 
 const goHome = () => {
+  // If the list component is mounted, clear its filters when returning home
+  if (publicationListRef.value && typeof publicationListRef.value.clearFilters === 'function') {
+    publicationListRef.value.clearFilters();
+  }
+
   currentView.value = 'list';
   editId.value = undefined;
 };
 </script>
 
 <style>
-/* Estilos globales */
 body {
   background-color: #f8f9fa;
 }

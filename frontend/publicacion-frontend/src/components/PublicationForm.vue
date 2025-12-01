@@ -1,5 +1,5 @@
 <template>
-  <div class="container mt-4">
+  <div class="container-fluid mt-4">
     <h2 class="mb-4">{{ isEditing ? 'Editar Publicación' : 'Crear Nueva Publicación' }}</h2>
 
     <form @submit.prevent="savePublication" class="needs-validation" novalidate>
@@ -38,11 +38,7 @@
           id="description"
           rows="3"
           v-model="publication.description"
-          required
-        ></textarea>
-        <div class="invalid-feedback">
-          Por favor, ingrese una descripción.
-        </div>
+        />
       </div>
 
       <div class="mb-3">
@@ -103,21 +99,31 @@
           Por favor, ingrese las coordenadas de ubicación.
         </div>
       </div>
-
-      <button type="submit" class="btn btn-primary me-2">
-        {{ isEditing ? 'Guardar Cambios' : 'Crear Publicación' }}
-      </button>
-      <button type="button" @click="cancel" class="btn btn-secondary">Cancelar</button>
+      <div class="mb-3 d-flex justify-content-end">
+        <button type="button" class="btn btn-warning me-2" @click="cancel">Cancelar</button>
+        <button type="submit" class="btn btn-light">
+          {{ isEditing ? 'Guardar Cambios' : 'Crear Publicación' }}
+        </button>
+      </div>
 
       <div v-if="loading" class="text-center mt-3">Guardando...</div>
       <div v-if="error" class="alert alert-danger mt-3">{{ error }}</div>
-      <div v-if="successMessage" class="alert alert-success mt-3">{{ successMessage }}</div>
+
+      <!-- Bootstrap-like toast (uses provided markup) -->
+      <div v-if="showToast" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+        <div class="toast align-items-center text-white bg-success border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="d-flex">
+            <div class="toast-body">{{ successMessage }}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" @click="closeToast" aria-label="Close"></button>
+          </div>
+        </div>
+      </div>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import PublicationService from '@/services/publicationServices';
 import { Publication, PublicationPayload } from '@/types/Publication';
 
@@ -143,6 +149,13 @@ const publication = ref<Publication>({ ...initialPublicationState });
 const loading = ref<boolean>(false);
 const error = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
+const showToast = ref<boolean>(false);
+
+// Emitir evento al padre cuando se cancela o termina la operación
+const emit = defineEmits<{ done: () => void }>();
+
+// Timeout para esperar antes de navegar de vuelta al listado (mostrar toast)
+let navigateTimeout: ReturnType<typeof setTimeout> | null = null;
 
 //Para saber si estamos editando o creando
 const isEditing = computed<boolean>(() => props.id !== undefined && props.id > 0);
@@ -180,6 +193,12 @@ const savePublication = async () => {
       // Actualizar una publicación existente
       await PublicationService.updatePublication(publication.value.id, publication.value);
       successMessage.value = 'Publicación actualizada correctamente.';
+      // Mostrar toast y esperar un tiempo antes de volver al listado
+      showToast.value = true;
+      navigateTimeout = setTimeout(() => {
+        showToast.value = false;
+        emit('done');
+      }, 5000);
     } else {
       // Crear una nueva publicación
       // Excluimos 'id' del payload para POST ya que el backend lo autogenera.
@@ -194,7 +213,13 @@ const savePublication = async () => {
       };
       await PublicationService.createPublication(payload);
       successMessage.value = 'Publicación creada correctamente.';
-      // Limpiar el formulario después de la creación exitosa
+      // Mostrar toast y esperar un tiempo antes de volver al listado
+      showToast.value = true;
+      navigateTimeout = setTimeout(() => {
+        showToast.value = false;
+        emit('done');
+      }, 5000);
+      // Limpiar el formulario después de la creación exitosa (opcional)
       publication.value = { ...initialPublicationState };
     }
   } catch (err) {
@@ -206,8 +231,25 @@ const savePublication = async () => {
 };
 
 const cancel = () => {
-  alert('Operación cancelada. Aquí iría una redirección o cierre de modal.');
-  // En una aplicación real con vue-router, harías algo como: router.push('/publications');
+  // Si hay un timeout pendiente para navegar, cancelarlo
+  if (navigateTimeout) {
+    clearTimeout(navigateTimeout);
+    navigateTimeout = null;
+  }
+  // Notificar al componente padre que la operación fue cancelada
+  // Asegurarse de ocultar cualquier toast visible
+  showToast.value = false;
+  emit('done');
+};
+
+const closeToast = () => {
+  // Usuario cerró el toast manualmente: cancelar timeout y volver inmediatamente
+  if (navigateTimeout) {
+    clearTimeout(navigateTimeout);
+    navigateTimeout = null;
+  }
+  showToast.value = false;
+  emit('done');
 };
 
 // Hook de ciclo de vida: Al montar el componente, si hay un ID, carga los datos.
@@ -224,6 +266,14 @@ watch(() => props.id, (newId) => {
   } else {
     // Si el ID se limpia, reinicia el formulario para una nueva creación
     publication.value = { ...initialPublicationState };
+  }
+});
+
+// Limpiar el timeout si el componente se desmonta
+onUnmounted(() => {
+  if (navigateTimeout) {
+    clearTimeout(navigateTimeout);
+    navigateTimeout = null;
   }
 });
 </script>

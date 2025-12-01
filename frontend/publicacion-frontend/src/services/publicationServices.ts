@@ -2,7 +2,7 @@ import axios from 'axios';
 import type { AxiosResponse } from 'axios';
 import type { Publication, PublicationPayload } from '@/types/Publication';
 
-const API_URL = 'https://localhost:5000/lubee-publicacion/api/v1/Publication';
+const API_URL = 'https://localhost:5000/lubee-publicacion/api/v1/publicaciones';
 
 const PublicationService = {
   getAllPublications(): Promise<AxiosResponse<Publication[]>> {
