@@ -69,21 +69,28 @@
     <!-- Detail Modal -->
     <div v-if="showDetailModal">
       <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content">
             <div class="modal-header">
               <h5 class="modal-title">Detalle de Publicación #{{ selectedPublication?.id }}</h5>
               <button type="button" class="btn-close" @click="showDetailModal = false" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-              <p><strong>Tipo de propiedad:</strong> {{ selectedPublication?.propertyType }}</p>
-              <p><strong>Tipo de operación:</strong> {{ selectedPublication?.operationType }}</p>
-              <p><strong>Descripción:</strong> {{ selectedPublication?.description }}</p>
-              <p><strong>Habitaciones:</strong> {{ selectedPublication?.rooms }}</p>
-              <p><strong>M2:</strong> {{ selectedPublication?.m2 }} m²</p>
-              <p><strong>Antigüedad:</strong> {{ selectedPublication?.age }} años</p>
-              <p><strong>Coordenadas:</strong> {{ selectedPublication?.locationCoordinates }}</p>
-            </div>
+                    <div class="modal-body">
+                      <div v-if="selectedPublication?.images?.length" class="mb-3">
+                        <img :src="(selectedPublication.images[currentImageIndex] && selectedPublication.images[currentImageIndex].url) || ''" class="img-fluid mb-2" style="max-height:220px; width:100%; object-fit:cover" alt="Imagen publicación" />
+                        <div class="d-flex gap-2">
+                          <img v-for="(img, i) in selectedPublication.images" :key="img.id" :src="img.url" class="img-thumbnail" style="width:70px; height:50px; object-fit:cover; cursor:pointer" :class="{'border-primary': i===currentImageIndex}" @click="currentImageIndex = i" />
+                        </div>
+                      </div>
+
+                      <p><strong>Tipo de propiedad:</strong> {{ selectedPublication?.propertyType }}</p>
+                      <p><strong>Tipo de operación:</strong> {{ selectedPublication?.operationType }}</p>
+                      <p><strong>Descripción:</strong> {{ selectedPublication?.description }}</p>
+                      <p><strong>Habitaciones:</strong> {{ selectedPublication?.rooms }}</p>
+                      <p><strong>M2:</strong> {{ selectedPublication?.m2 }} m²</p>
+                      <p><strong>Antigüedad:</strong> {{ selectedPublication?.age }} años</p>
+                      <p><strong>Coordenadas:</strong> {{ selectedPublication?.locationCoordinates }}</p>
+                    </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-secondary" @click="showDetailModal = false">Cerrar</button>
               <button type="button" class="btn btn-primary" @click="editFromDetail">Editar</button>
@@ -94,7 +101,6 @@
       <div class="modal-backdrop fade show"></div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal">
       <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -126,14 +132,14 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import PublicationService from '@/services/publicationServices';
-import { Publication } from '@/types/Publication';
+import ImageService from '@/services/imageService';
+import { Publication, PublicationWithImages, PublicationImage } from '@/types/Publication';
 
-const publications = ref<Publication[]>([]);
+const publications = ref<PublicationWithImages[]>([]);
 const loading = ref<boolean>(false);
 const error = ref<string | null>(null);
 const searchTerm = ref<string>('');
 
-// Filters
 const propertyTypeFilter = ref<string>('');
 const operationTypeFilter = ref<string>('');
 const roomsFilter = ref<number | null>(null);
@@ -157,7 +163,6 @@ const filteredPublications = computed(() => {
   const q = searchTerm.value.trim().toLowerCase();
   const qNumber = Number(q);
   return publications.value.filter((p) => {
-    // text query applies to description and coordinates and property/operation
     if (q) {
       const inText = [p.propertyType, p.operationType, p.description, p.locationCoordinates]
         .filter(Boolean)
@@ -189,19 +194,40 @@ const filteredPublications = computed(() => {
   });
 });
 
-// Emit events to parent for edit actions
 const emit = defineEmits(['edit', 'create']);
 
-  // Modal state
-  const selectedPublication = ref<Publication | null>(null);
+  const selectedPublication = ref<PublicationWithImages | null>(null);
   const showDetailModal = ref<boolean>(false);
   const showDeleteModal = ref<boolean>(false);
   const deletingId = ref<number | null>(null);
+  const currentImageIndex = ref<number>(0);
 
-  // Abrir modal de detalle
-  const openDetail = (pub: Publication) => {
-    selectedPublication.value = pub;
-    showDetailModal.value = true;
+  const openDetail = async (pub: Publication) => {
+    try {
+      loading.value = true;
+      const resp = await PublicationService.getPublicationById(pub.id);
+      // Obtener la publicación (sin asumir que trae imágenes)
+      const data = resp.data as PublicationWithImages;
+
+      try {
+        const imgsResp = await ImageService.getImagesByPublicationId(pub.id);
+        let imgs = imgsResp.data as PublicationImage | PublicationImage[] | null;
+        if (imgs && !Array.isArray(imgs)) imgs = [imgs];
+        data.images = (imgs as PublicationImage[]) || [];
+      } catch (imgErr) {
+        console.warn('Fallo al cargar imágenes desde el endpoint /imagenes', imgErr);
+        data.images = [];
+      }
+
+      selectedPublication.value = data;
+      currentImageIndex.value = 0;
+      showDetailModal.value = true;
+    } catch (err) {
+      error.value = `Error al cargar detalle de la publicación ${pub.id}`;
+      console.error(err);
+    } finally {
+      loading.value = false;
+    }
   };
 
   // Preparar modal de eliminación (muestra detalles en modal)
