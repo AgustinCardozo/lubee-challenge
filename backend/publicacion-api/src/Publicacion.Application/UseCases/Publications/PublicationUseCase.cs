@@ -37,7 +37,7 @@ namespace Publicacion.Application.UseCases.Publications
             return PublicationMapping.MapToDto(publication);
         }
 
-        public async Task<List<PublicationDto>> GetGetAllAsync()
+        public async Task<List<PublicationDto>> GetAllAsync()
         {
             List<Publication> publications = await _publicationRepository.GetAllAsync();
             return publications.Select(p => PublicationMapping.MapToDto(p)).OrderBy(p => p.Id).ToList();

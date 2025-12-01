@@ -13,7 +13,7 @@ namespace Publicacion.Api.Controllers.v1
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
-            var publications = await _publicationUseCase.GetGetAllAsync();
+            var publications = await _publicationUseCase.GetAllAsync();
             return Ok(publications);
         }
 

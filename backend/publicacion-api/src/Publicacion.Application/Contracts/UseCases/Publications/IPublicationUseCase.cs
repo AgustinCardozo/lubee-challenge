@@ -8,7 +8,7 @@ namespace Publicacion.Application.Contracts.UseCases
         public Task DeleteAsync(int id);
         public Task<bool> ExistAsync(int id);
         public Task<PublicationDto?> GetByIdAsync(int id);
-        public Task<List<PublicationDto>> GetGetAllAsync();
+        public Task<List<PublicationDto>> GetAllAsync();
         public Task UpdateAsync(int id, PublicationDto publicationDto);
     }
 }
