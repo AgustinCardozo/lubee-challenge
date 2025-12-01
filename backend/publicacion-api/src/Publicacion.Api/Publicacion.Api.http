@@ -1,0 +1,45 @@
+@Publicacion.Api_HostAddress = https://localhost:5000/lubee-publicacion
+
+### Publicaciones - obtener todas
+GET {{Publicacion.Api_HostAddress}}/api/v1/publicaciones
+Accept: application/json
+
+### Publicaciones - obtener por id
+GET {{Publicacion.Api_HostAddress}}/api/v1/publicaciones/1
+Accept: application/json
+
+### Publicaciones - crear (ejemplo)
+POST {{Publicacion.Api_HostAddress}}/api/v1/publicaciones
+Content-Type: application/json
+
+{
+	"PropertyType": "Departamento",
+	"OperationType": "Venta",
+	"Description": "Departamento de prueba en el centro",
+	"Rooms": 2,
+	"M2": 55,
+	"Age": 5,
+	"LocationCoordinates": "-34.6037,-58.3816"
+}
+
+### Publicaciones - actualizar (ejemplo)
+PUT {{Publicacion.Api_HostAddress}}/api/v1/publicaciones/11
+Content-Type: application/json
+
+{
+	"Id": 11,
+	"PropertyType": "Casa",
+	"OperationType": "Alquiler",
+	"Description": "Casa actualizada",
+	"Rooms": 3,
+	"M2": 120,
+	"Age": 10,
+	"LocationCoordinates": "-34.6000,-58.3800"
+}
+
+### Publicaciones - eliminar
+DELETE {{Publicacion.Api_HostAddress}}/api/v1/publicaciones/1
+
+### Imágenes - obtener por publicationId
+GET {{Publicacion.Api_HostAddress}}/api/v1/imagenes/1
+Accept: application/json
