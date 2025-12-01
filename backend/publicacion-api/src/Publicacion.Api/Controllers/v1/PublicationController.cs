@@ -2,13 +2,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Publicacion.Application.Contracts.UseCases;
 using Publicacion.Application.DTOs;
-using System.Net;
 
 namespace Publicacion.Api.Controllers.v1
 {
     [ApiController]
     [ApiVersion("1.0")]
-    [Route("api/v{version:apiVersion}/[controller]")]
+    [Route("api/v{version:apiVersion}/publicaciones")]
 
     public class PublicationController(IPublicationUseCase _publicationUseCase) : ControllerBase
     {

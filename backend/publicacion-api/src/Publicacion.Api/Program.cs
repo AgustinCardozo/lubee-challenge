@@ -31,8 +31,8 @@ builder.Services.AddApiVersioning(opt =>
 builder.Services.AddCors(p =>
 {
     p.AddDefaultPolicy(opt => opt
+        .WithOrigins("http://localhost:3000")
         .AllowAnyHeader()
-        .AllowAnyOrigin()
         .AllowAnyMethod());
 });
 
