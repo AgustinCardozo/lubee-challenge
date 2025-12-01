@@ -26,7 +26,7 @@ import PublicationForm from '@/components/PublicationForm.vue';
 
 // Variable reactiva para controlar qué componente se muestra
 const currentView = ref<'list' | 'create' | 'edit'>('list');
-const editId = ref<number | undefined>(undefined); // Almacena el ID de la publicación a editar
+const editId = ref<number | undefined>(undefined);
 
 type PublicationListInstance = { clearFilters?: () => void };
 const publicationListRef = ref<PublicationListInstance | null>(null);
@@ -37,7 +37,6 @@ const editPublication = (id: number) => {
 };
 
 const goHome = () => {
-  // If the list component is mounted, clear its filters when returning home
   if (publicationListRef.value && typeof publicationListRef.value.clearFilters === 'function') {
     publicationListRef.value.clearFilters();
   }

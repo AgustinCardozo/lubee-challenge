@@ -127,13 +127,11 @@ import { ref, onMounted, computed, watch, onUnmounted } from 'vue';
 import PublicationService from '@/services/publicationServices';
 import { Publication, PublicationPayload } from '@/types/Publication';
 
-// Las props que puede recibir el componente
 interface Props {
-  id?: number; // 'id' es opcional para el caso de creación
+  id?: number; 
 }
 const props = defineProps<Props>();
 
-// Estado inicial de una publicación vacía
 const initialPublicationState: Publication = {
   id: 0, // El ID se manejará automáticamente por el backend para nuevas publicaciones
   propertyType: '',
@@ -151,10 +149,8 @@ const error = ref<string | null>(null);
 const successMessage = ref<string | null>(null);
 const showToast = ref<boolean>(false);
 
-// Emitir evento al padre cuando se cancela o termina la operación
 const emit = defineEmits<{ done: () => void }>();
 
-// Timeout para esperar antes de navegar de vuelta al listado (mostrar toast)
 let navigateTimeout: ReturnType<typeof setTimeout> | null = null;
 
 //Para saber si estamos editando o creando
@@ -178,29 +174,27 @@ const fetchPublicationToEdit = async (id: number) => {
 // Guardar (crear o actualizar) la publicación
 const savePublication = async () => {
   const form = document.querySelector('.needs-validation') as HTMLFormElement;
+  
   if (!form.checkValidity()) {
     form.classList.add('was-validated');
     return;
   }
-  form.classList.remove('was-validated'); // Quitar la clase si es válido
 
+  form.classList.remove('was-validated');
   loading.value = true;
   error.value = null;
   successMessage.value = null;
 
   try {
     if (isEditing.value) {
-      // Actualizar una publicación existente
       await PublicationService.updatePublication(publication.value.id, publication.value);
       successMessage.value = 'Publicación actualizada correctamente.';
-      // Mostrar toast y esperar un tiempo antes de volver al listado
       showToast.value = true;
       navigateTimeout = setTimeout(() => {
         showToast.value = false;
         emit('done');
-      }, 5000);
+      }, 2000);
     } else {
-      // Crear una nueva publicación
       // Excluimos 'id' del payload para POST ya que el backend lo autogenera.
       const payload: PublicationPayload = {
         propertyType: publication.value.propertyType,
@@ -211,15 +205,16 @@ const savePublication = async () => {
         age: publication.value.age,
         locationCoordinates: publication.value.locationCoordinates,
       };
+
       await PublicationService.createPublication(payload);
+      
       successMessage.value = 'Publicación creada correctamente.';
-      // Mostrar toast y esperar un tiempo antes de volver al listado
       showToast.value = true;
+
       navigateTimeout = setTimeout(() => {
         showToast.value = false;
         emit('done');
-      }, 5000);
-      // Limpiar el formulario después de la creación exitosa (opcional)
+      }, 2000);
       publication.value = { ...initialPublicationState };
     }
   } catch (err) {
@@ -231,23 +226,21 @@ const savePublication = async () => {
 };
 
 const cancel = () => {
-  // Si hay un timeout pendiente para navegar, cancelarlo
   if (navigateTimeout) {
     clearTimeout(navigateTimeout);
     navigateTimeout = null;
   }
-  // Notificar al componente padre que la operación fue cancelada
-  // Asegurarse de ocultar cualquier toast visible
+
   showToast.value = false;
   emit('done');
 };
 
 const closeToast = () => {
-  // Usuario cerró el toast manualmente: cancelar timeout y volver inmediatamente
   if (navigateTimeout) {
     clearTimeout(navigateTimeout);
     navigateTimeout = null;
   }
+
   showToast.value = false;
   emit('done');
 };
@@ -264,12 +257,11 @@ watch(() => props.id, (newId) => {
   if (newId) {
     fetchPublicationToEdit(newId);
   } else {
-    // Si el ID se limpia, reinicia el formulario para una nueva creación
     publication.value = { ...initialPublicationState };
   }
 });
 
-// Limpiar el timeout si el componente se desmonta
+// Limpia el timeout si el componente se desmonta
 onUnmounted(() => {
   if (navigateTimeout) {
     clearTimeout(navigateTimeout);
