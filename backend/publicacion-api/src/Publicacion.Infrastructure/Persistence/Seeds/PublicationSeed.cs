@@ -22,11 +22,11 @@ namespace Publicacion.Infrastructure.Persistence.Seeds
                 new Publication
                 {
                     Id = 2,
-                    PropertyType = "Departamento",
+                    PropertyType = "Casa",
                     OperationType = "Alquiler",
-                    Description = "Departamento de dos ambientes en Villa Crespo",
+                    Description = "Casa con patio y pileta para alquilar en zona tranquila.",
                     Rooms = 2,
-                    M2 = 35,
+                    M2 = 100,
                     Age = 20,
                     LocationCoordinates = "-34.5912740626822, -58.44926342405723"
                 },
@@ -44,12 +44,12 @@ namespace Publicacion.Infrastructure.Persistence.Seeds
                 new Publication
                 {
                     Id = 4,
-                    PropertyType = "Terreno",
+                    PropertyType = "Departamento",
                     OperationType = "Venta",
-                    Description = "Terreno de 800m2 en zona de alto crecimiento, listo para construir.",
-                    Rooms = 0,
-                    M2 = 800,
-                    Age = 0,
+                    Description = "Departamento para excelente iluminación y ubicado a metros de Plaza Serrano.",
+                    Rooms = 2,
+                    M2 = 60,
+                    Age = 5,
                     LocationCoordinates = "-33.15161855419031, -68.89191390749127"
                 },
                 new Publication

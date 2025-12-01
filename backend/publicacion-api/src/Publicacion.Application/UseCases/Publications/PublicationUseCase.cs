@@ -40,7 +40,7 @@ namespace Publicacion.Application.UseCases.Publications
         public async Task<List<PublicationDto>> GetGetAllAsync()
         {
             List<Publication> publications = await _publicationRepository.GetAllAsync();
-            return publications.Select(p => PublicationMapping.MapToDto(p)).ToList();
+            return publications.Select(p => PublicationMapping.MapToDto(p)).OrderBy(p => p.Id).ToList();
         }
 
         public async Task UpdateAsync(int id, PublicationDto publicationDto)

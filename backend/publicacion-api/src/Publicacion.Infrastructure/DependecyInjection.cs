@@ -25,6 +25,7 @@ namespace Publicacion.Infrastructure
         private static IServiceCollection AddRepositories(this IServiceCollection services)
         {
             services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IImageRepository, ImageRepository>();
             services.AddScoped<IPublicationRepository, PublicationRepository>();
 
             return services;

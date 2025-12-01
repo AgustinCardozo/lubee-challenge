@@ -10,5 +10,5 @@ public class Publication
     public int M2 { get; set; } //TODO: revisar el tipo y que sería
     public int Age { get; set; }
     public string? LocationCoordinates { get; set; }
-    //public List<string?> Images {  get; set; } //TODO: revisar el tipo y que sería
+    public List<Image> Images { get; set; } = new List<Image>();
 }

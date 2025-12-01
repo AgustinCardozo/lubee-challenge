@@ -8,7 +8,6 @@ namespace Publicacion.Api.Controllers.v1
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/publicaciones")]
-
     public class PublicationController(IPublicationUseCase _publicationUseCase) : ControllerBase
     {
         [HttpGet]

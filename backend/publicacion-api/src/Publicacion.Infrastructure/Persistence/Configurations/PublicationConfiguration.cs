@@ -22,6 +22,11 @@ namespace Publicacion.Infrastructure.Persistence.EntityConfigurations
             builder.Property(p => p.Description)
                 .HasMaxLength(250);
 
+            builder.HasMany(p => p.Images) // La publicación tiene muchas imágenes
+                .WithOne(i => i.Publication) // Cada imagen pertenece a una sola publicación
+                .HasForeignKey(i => i.PublicationId) // La FK en la tabla Imagen se llama PublicacionId
+                .OnDelete(DeleteBehavior.Cascade); // Si se borra la Publicación, se borran sus Imágenes
+
             builder.HasData(PublicationSeed.GetSeedingData());
         }
     }
